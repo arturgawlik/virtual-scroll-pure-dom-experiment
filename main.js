@@ -2,6 +2,9 @@ const MAX_CONTAINER_HEIGHT = 200;
 
 const [ulElem] = document.getElementsByTagName("ul");
 const containerElem = document.getElementById("container");
+/**
+ * @type {HTMLLIElement[]}
+ */
 const liElems = [];
 const elementsToRender = [];
 
@@ -21,19 +24,34 @@ function render() {
       break;
     }
 
-    const liElem = createNewLiElem();
-    liElem.innerText = elementsToRender[liElems.length];
-    ulElem.appendChild(liElem);
-
-    liElems.push(liElem);
+    addElement();
 
     if (liElems.length === 1) {
       adjustScrollHeight();
     }
   }
+  deleteNonVisibleElements();
 }
 render();
 containerElem.addEventListener("wheel", render);
+
+function addElement() {
+  const liElem = createNewLiElem();
+  liElem.innerText = elementsToRender[liElems.length];
+  ulElem.appendChild(liElem);
+
+  liElems.push(liElem);
+}
+
+function deleteNonVisibleElements() {
+  const notVisibleElems = liElems.filter((elem) => !isElementVisible(elem));
+  for (const elem of notVisibleElems) {
+    elem.remove();
+    // const index = liElems.indexOf(elem);
+    // liElems.splice(index, 1);
+    // liElems.fill(null, index, index + 1);
+  }
+}
 
 function adjustScrollHeight() {
   const allLiHeight = liElems[0].offsetHeight * elementsToRender.length;
