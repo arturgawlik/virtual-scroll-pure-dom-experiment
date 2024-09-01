@@ -126,5 +126,12 @@ export class VScroll {
   /**
    * Moves elements + adjust container's height's
    */
-  #render() {}
+  #render() {
+    /*
+        TODO: use IntersectionObserver to determin when element dispears from screen.
+        and when it does then move it to the other side with updated content.
+        Additionaly when elements are moved then also top/bottom container should also 
+        have adjusted its heights.
+    */
+  }
 }
