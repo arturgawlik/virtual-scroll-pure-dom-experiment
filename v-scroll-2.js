@@ -121,6 +121,52 @@ export class VScroll {
     // finally we can adjust bottom placeholder container
     const bottomElHeight = oneListElementHeight * this.#listToRender.length;
     this.#bottomEl.style.height = `${bottomElHeight}px`;
+
+    // after initiall render we are adding intersection observer to each one of rendered elements
+    // with callback that will move element to the other side and update content + adjust top/bottom container height
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        const isVisible = entry.isIntersecting;
+        if (!isVisible) {
+          const element = entry.target;
+          const isFirstElement = Boolean(element.nextElementSibling);
+          if (isFirstElement) {
+            this.#elementsContainerEl.append(element);
+
+            const topHeightStr = this.#topEl.style.height;
+            const topHeight = Number(topHeightStr.replace("px", ""));
+            const newTopHeight = topHeight + oneListElementHeight;
+            this.#topEl.style.height = `${newTopHeight}px`;
+
+            const bottomHeightStr = this.#bottomEl.style.height;
+            const bottomHeight = Number(bottomHeightStr.replace("px", ""));
+            const newBottomHeight = bottomHeight - oneListElementHeight;
+            this.#bottomEl.style.height = `${newBottomHeight}px`;
+          } else {
+            this.#elementsContainerEl.prepend(element);
+
+            const topHeightStr = this.#topEl.style.height;
+            const topHeight = Number(topHeightStr.replace("px", ""));
+            const newTopHeight = topHeight - oneListElementHeight;
+            this.#topEl.style.height = `${newTopHeight}px`;
+
+            const bottomHeightStr = this.#bottomEl.style.height;
+            const bottomHeight = Number(bottomHeightStr.replace("px", ""));
+            const newBottomHeight = bottomHeight + oneListElementHeight;
+            this.#bottomEl.style.height = `${newBottomHeight}px`;
+          }
+        }
+      },
+      {
+        root: this.#rootEl,
+        threshold: 0, // want to be notified when element is not visible anymore
+      }
+    );
+    for (const [_key, value] of this.#listElements) {
+      observer.observe(value);
+      break; //
+    }
   }
 
   /**
