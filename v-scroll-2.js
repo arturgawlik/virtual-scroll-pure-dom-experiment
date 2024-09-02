@@ -119,7 +119,9 @@ export class VScroll {
     }
 
     // finally we can adjust bottom placeholder container
-    const bottomElHeight = oneListElementHeight * this.#listToRender.length;
+    const bottomElHeight =
+      oneListElementHeight *
+      (this.#listToRender.length - elementsCountToRender);
     this.#bottomEl.style.height = `${bottomElHeight}px`;
 
     // after initiall render we are adding intersection observer to each one of rendered elements
@@ -132,29 +134,73 @@ export class VScroll {
           const element = entry.target;
           const isFirstElement = Boolean(element.nextElementSibling);
           if (isFirstElement) {
+            // move element to the end
             this.#elementsContainerEl.append(element);
 
+            // adjust top container height
             const topHeightStr = this.#topEl.style.height;
             const topHeight = Number(topHeightStr.replace("px", ""));
             const newTopHeight = topHeight + oneListElementHeight;
             this.#topEl.style.height = `${newTopHeight}px`;
 
+            // adjust bottom container height
             const bottomHeightStr = this.#bottomEl.style.height;
             const bottomHeight = Number(bottomHeightStr.replace("px", ""));
             const newBottomHeight = bottomHeight - oneListElementHeight;
             this.#bottomEl.style.height = `${newBottomHeight}px`;
+
+            // update content of the element
+            const [currentlyLastElementContentIndex] = Array.from(
+              this.#listElements.keys()
+            )
+              .toSorted((a, b) => a - b)
+              .slice(-1);
+            const newLastElementContentIndex =
+              currentlyLastElementContentIndex + 1;
+            const newLastElementContent =
+              this.#listToRender[newLastElementContentIndex];
+            element.textContent = newLastElementContent;
+
+            // update list listElements map
+            const currentElementContentIndex = Array.from(
+              this.#listElements.keys()
+            ).toSorted((a, b) => a - b)[0];
+            this.#listElements.delete(currentElementContentIndex);
+            this.#listElements.set(newLastElementContentIndex, element);
           } else {
+            // move element to the start
             this.#elementsContainerEl.prepend(element);
 
+            // adjust top container height
             const topHeightStr = this.#topEl.style.height;
             const topHeight = Number(topHeightStr.replace("px", ""));
             const newTopHeight = topHeight - oneListElementHeight;
             this.#topEl.style.height = `${newTopHeight}px`;
 
+            // adjust bottom container height`
             const bottomHeightStr = this.#bottomEl.style.height;
             const bottomHeight = Number(bottomHeightStr.replace("px", ""));
             const newBottomHeight = bottomHeight + oneListElementHeight;
             this.#bottomEl.style.height = `${newBottomHeight}px`;
+
+            // update content of the element
+            const currentlyFirstElementContentIndex = Array.from(
+              this.#listElements.keys()
+            ).toSorted((a, b) => a - b)[0];
+            const newFirstElementContentIndex =
+              currentlyFirstElementContentIndex - 1;
+            const newLastElementContent =
+              this.#listToRender[newFirstElementContentIndex];
+            element.textContent = newLastElementContent;
+
+            // update list listElements map
+            const [currentElementContentIndex] = Array.from(
+              this.#listElements.keys()
+            )
+              .toSorted((a, b) => a - b)
+              .slice(-1);
+            this.#listElements.delete(currentElementContentIndex);
+            this.#listElements.set(newFirstElementContentIndex, element);
           }
         }
       },
@@ -165,7 +211,6 @@ export class VScroll {
     );
     for (const [_key, value] of this.#listElements) {
       observer.observe(value);
-      break; //
     }
   }
 
